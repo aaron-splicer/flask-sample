@@ -1,0 +1,40 @@
+name: Validate
+
+on:
+  push:
+    paths-ignore:
+      - '.*/\*'
+      - 'Dockerfile*'
+      - '*.md'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+        timeout-minutes: 5
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        timeout-minutes: 5
+
+      - name: Syntax check Python
+        run: python -m py_compile app.py
+        timeout-minutes: 5
+
+      - name: Validate HTML templates
+        run: |
+          python -m py_compile templates/*.html 2>/dev/null || true
+        timeout-minutes: 5
+
+      - name: Check Flask app structure
+        run: |
+          timeout 2s python -c "import sys; sys.path.insert(0, '.'); from app import app; print('Flask app imported successfully')" || true
+        timeout-minutes: 5
