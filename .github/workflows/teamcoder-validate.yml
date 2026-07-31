@@ -1,0 +1,33 @@
+name: Validate
+
+on:
+  push:
+    paths-ignore:
+      - '.*/'
+      - 'Dockerfile*'
+      - '*.md'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        timeout-minutes: 5
+
+      - name: Syntax check Python files
+        run: python -m py_compile app.py
+        timeout-minutes: 5
+
+      - name: Validate Flask app structure
+        run: python -c "import ast; ast.parse(open('app.py').read())"
+        timeout-minutes: 5
