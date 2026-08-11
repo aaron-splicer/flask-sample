@@ -1,0 +1,23 @@
+name: Validate
+on:
+  push:
+    paths-ignore:
+      - '.*/**'
+      - 'Dockerfile*'
+      - '*.md'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Check Python syntax
+        run: python -m py_compile app.py
+      - name: Validate Flask imports and configuration
+        run: python -c "import app; assert hasattr(app, 'app')"
