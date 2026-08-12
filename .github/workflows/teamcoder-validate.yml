@@ -1,0 +1,33 @@
+name: Validate
+
+on:
+  push:
+    paths-ignore:
+      - '.*/**'
+      - '**/.*'
+      - 'Dockerfile*'
+      - '*.md'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: pip install -r requirements.txt
+      
+      - name: Compile Python (syntax check)
+        timeout-minutes: 5
+        run: python -m py_compile app.py
+      
+      - name: Validate requirements.txt
+        timeout-minutes: 5
+        run: cat requirements.txt | grep -v '^#' | grep -v '^$' && echo "requirements.txt is valid"
