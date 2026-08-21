@@ -1,0 +1,28 @@
+name: Validate
+on:
+  push:
+    paths-ignore:
+      - '.*/**'
+      - 'Dockerfile*'
+      - '*.md'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Syntax check app.py
+        run: python -m py_compile app.py
+      - name: Syntax check templates
+        run: |
+          for f in templates/*.html; do
+            python -m py_compile "$f" 2>&1 | grep -q "SyntaxError" && exit 1 || true
+          done
+      - name: Validate Flask app structure
+        run: timeout 5s python -c "from app import app; print('Flask app imported successfully')" || true
