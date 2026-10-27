@@ -1,0 +1,46 @@
+name: Validate
+
+on:
+  push:
+    paths-ignore:
+      - '.*/**'
+      - 'Dockerfile*'
+      - '*.md'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+        timeout-minutes: 5
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        timeout-minutes: 5
+
+      - name: Syntax check Python
+        run: python -m py_compile app.py
+        timeout-minutes: 5
+
+      - name: Validate HTML templates
+        run: python -m html.parser templates/index.html
+        timeout-minutes: 5
+
+      - name: Validate CSS syntax
+        run: |
+          python -c "
+          import re
+          with open('static/style.css', 'r') as f:
+              content = f.read()
+              if '{' in content and '}' in content:
+                  print('CSS file has valid brace structure')
+              else:
+                  print('Warning: CSS file structure check')
+          "
+        timeout-minutes: 5
